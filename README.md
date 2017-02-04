@@ -1,4 +1,4 @@
-# spatstatSphere: Point patterns on the sphere
+# spatstat.sphere: Point patterns on the sphere
 
 This repository is an effort to combine R code for point patterns on the sphere
 and general geometrical computations on the sphere developed by:
