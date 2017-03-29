@@ -1,10 +1,11 @@
 language: r
 matrix:
   include:
-    - os: osx
+    - os: linux
       env: R_FULL_CHECK=true 
-    - os: osx
+    - os: linux
 env:
+  global:
   - _R_CHECK_FORCE_SUGGESTS_=false
   - R_BUILD_QUICK="--no-build-vignettes --no-manual"
   - R_CHECK_QUICK="--no-build-vignettes --no-manual --no-tests --no-codoc --no-install --no-examples"
@@ -12,6 +13,6 @@ sudo: false
 cache: packages
 warnings_are_errors: false
 before_install:
-- if [[ "${R_FULL_CHECK}" ]]; then export MY_R_CHECK_ARGS="--as-cran"; else export MY_R_CHECK_ARGS=${R_CHECK_QUICK} fi
+- if [[ "${R_FULL_CHECK}" ]]; then export MY_R_CHECK_ARGS="--as-cran"; else export MY_R_CHECK_ARGS=${R_CHECK_QUICK}; fi
 r_check_args:
   - ${MY_R_CHECK_ARGS}
