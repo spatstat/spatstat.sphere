@@ -17,7 +17,7 @@ s2place <- function(placename, online = TRUE, verbose = FALSE) {
               " among builtin placenames in globe package -- trying online via Google Maps API...")
     }
     rslt <- RgoogleMaps::getGeoCode(pn, verbose = verbose)
-    if(!anyNA(rslt)) return(list(lon = rslt["lon"], lat = rslt["lat"]))
+    if(!anyNA(rslt)) return(rev(as.list(rslt)))
   } else{
     if(verbose){
       message("Install package RgoogleMaps to look for ", sQuote(placename), " online")

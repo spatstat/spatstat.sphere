@@ -113,7 +113,7 @@ s2cellstring <- function(x, level = 30L){
     ## Now we assume x is in point form
     x <- s2cellid(x, level = level)
   }
-  return(s2::S2CellId_ToString(x))
+  return(s2::S2CellId_ToString(x$id))
 }
 
 ## #' Plot the Outline of s2cells on the sphere
