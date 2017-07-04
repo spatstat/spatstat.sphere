@@ -11,6 +11,7 @@
 #' @export
 s2cellid <- function(x, level = 30){
   x <- globe::ensure3d(x, single = FALSE)
+  x <- matrix(x, ncol = 3)
   id <- s2::S2CellIdFromPoint(x, level)
   class(id) <- "s2cellid"
   return(id)
