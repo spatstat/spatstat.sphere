@@ -310,9 +310,13 @@ s2borderdist <- function(x, region = NULL){
     stop("An s2region must be supplied.")
   x <- globe::ensure3d(x, single = FALSE)
   if(inherits(region, "s2polygon")){
+    ## Extract loops and repeat first vertex in end
     loops <- lapply(region$loops, function(x) rbind(x, x[1,]))
+    ## List giving the distance from each point to each loop
     loopdist <- lapply(loops, S2Polyline_dist, x = x)
-    return(Reduce(pmin, loopdist))
+    ## Shortest border distance for each point
+    loopdist <- Reduce(pmin, loopdist)
+    return(s2radius(region)*loopdist)
     # return(s2::S2Polygon_border_dist(x, region$loops))
   }
   if(inherits(region, "s2") | inherits(region, "s2cap") && region$height >= 2*s2radius(region))
