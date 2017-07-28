@@ -65,3 +65,13 @@ closepairs.s2pp <- function(X, rmax, ..., chordal = FALSE){
   closelist$d <- 2*rad*closelist$d
   return(closelist)
 }
+
+nndist.s2pp <- function(X, ..., k = 1, chordal = FALSE){
+  XX <- s2coords(X)
+  rad <- s2radius(X)
+  d <- nndist.pp3(pp3(XX[,1], XX[,2], XX[,3], box3(c(-1,1))), ..., k = k)
+  if(!chordal)
+    d <- asin(d/2)
+  d <- 2*rad*d
+  return(d)
+}
