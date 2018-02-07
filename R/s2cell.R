@@ -105,16 +105,40 @@ s2cell <- function(x){
 #' three-column matrix representing points on the sphere.
 #' @param level Integer between 0 and 30 (incl.) to specify the desired s2cell
 #' level. Defaults to 30 for point data and is ignored for s2cell(id) data.
+#' @param binary Logical to request binary representation where four subcells
+#' are represented as 00, 01, 10 and 11 rather than by 0, 1, 2, 3 which is the
+#' default.
+#' @param zerotail Logical to turn on/off zero-padding at the end when `binary = TRUE`.
 #'
 #' @export
-s2cellstring <- function(x, level = 30L){
+s2cellstring <- function(x, level = 30L, binary = FALSE, zerotail = binary){
   if(inherits(x, "s2cell"))
     x <- x$ids
   if(!inherits(x, "s2cellid")){
     ## Now we assume x is in point form
     x <- s2cellid(x, level = level)
   }
-  return(s2::S2CellId_ToString(x$id))
+  x <- s2::S2CellId_ToString(x$id)
+  if(!binary)
+    return(x)
+  str2bin <- function(y, width = 2){
+    y <- sub("0", ifelse(width==2, "00", "000"), y)
+    y <- sub("1", ifelse(width==2, "01", "001"), y)
+    y <- sub("2", ifelse(width==2, "10", "010"), y)
+    y <- sub("3", ifelse(width==2, "11", "011"), y)
+    y <- sub("4", "100", y)
+    y <- sub("5", "101", y)
+    y
+  }
+  y <- strsplit(x, "")[[1]]
+  face <- str2bin(y[1], 3)
+  y <- y[-(1:2)]
+  y <- paste(c(face,sapply(y, str2bin)), collapse = ",")
+  y <- paste0(y, ",1")
+  if(zerotail && level < 30L){
+    y <- paste(y, ifelse(level == 29, "00", "0..0"), sep = ",")
+  }
+  y
 }
 
 ## #' Plot the Outline of s2cells on the sphere

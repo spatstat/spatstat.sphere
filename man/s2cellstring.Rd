@@ -4,7 +4,7 @@
 \alias{s2cellstring}
 \title{Retreive string representation of a s2cell}
 \usage{
-s2cellstring(x, level = 30L)
+s2cellstring(x, level = 30L, binary = FALSE, zerotail = binary)
 }
 \arguments{
 \item{x}{Input to retrieve string representations from.
@@ -13,6 +13,12 @@ three-column matrix representing points on the sphere.}
 
 \item{level}{Integer between 0 and 30 (incl.) to specify the desired s2cell
 level. Defaults to 30 for point data and is ignored for s2cell(id) data.}
+
+\item{binary}{Logical to request binary representation where four subcells
+are represented as 00, 01, 10 and 11 rather than by 0, 1, 2, 3 which is the
+default.}
+
+\item{zerotail}{Logical to turn on/off zero-padding at the end when \code{binary = TRUE}.}
 }
 \description{
 Retreive string representation of a s2cell
