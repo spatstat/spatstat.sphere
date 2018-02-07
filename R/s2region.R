@@ -16,7 +16,7 @@ s2 <- function(radius = 1, unitname = NULL, ...){
       unitname <- radius$units
     radius <- s2radius(radius)
   }
-  unitname <- as.units(unitname)
+  unitname <- as.unitname(unitname)
   s <- list(radius = radius, units = unitname)
   class(s) <- c("s2", "s2region")
   return(s)
