@@ -23,10 +23,10 @@ radius and units of the underlying sphere.}
 
 \item{lon}{Numeric of length 2 specifying longitude interval in degrees. For
 boxes not crossing the 180 degree meridian the input should be such that
-\code{-180 <= lon[1] < lon[2] <= 180}. For boxes crossing the 180 degree meridian
-the input shoud be such that \code{-180 <= lon[2] < lon[1] <= 180}.}
+\verb{-180 <= lon[1] < lon[2] <= 180}. For boxes crossing the 180 degree meridian
+the input shoud be such that \verb{-180 <= lon[2] < lon[1] <= 180}.}
 
-\item{lat}{Numeric of length 2 with \code{-90 <= lat[1] < lat[2] <= 90} specifying
+\item{lat}{Numeric of length 2 with \verb{-90 <= lat[1] < lat[2] <= 90} specifying
 latitude interval in degrees.}
 }
 \value{

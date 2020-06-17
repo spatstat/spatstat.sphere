@@ -16,15 +16,16 @@ are required and assumed to be in x, y, z order (disregarding any names).}
 \item{region}{Region on the sphere where the points occur. Object of class
 \code{"s2region"}.}
 
-\item{...}{Arguments passed on to \code{s2}
-\describe{
-  \item{radius}{Numeric. Defaults to 1. For convenience this can also be an
+\item{...}{
+  Arguments passed on to \code{\link[=s2]{s2}}
+  \describe{
+    \item{\code{radius}}{Numeric. Defaults to 1. For convenience this can also be an
 object of class \code{"s2region"} from where the radius and unitname then will be
 extracted.}
-  \item{unitname}{Optional. Name of unit of length. Either a single character
+    \item{\code{unitname}}{Optional. Name of unit of length. Either a single character
 string, or a vector of two character strings giving the singular and plural
 forms, respectively.}
-}}
+  }}
 
 \item{check}{Logical. Check that points actually are inside the provided
 \code{region}.}

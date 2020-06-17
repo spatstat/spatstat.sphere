@@ -11,10 +11,11 @@
 #' @importFrom grDevices dev.off png
 #' @importFrom graphics abline hist par plot rasterImage segments
 #' @importFrom stats rbinom runif
-#' @importFrom utils tail
+#' @importFrom utils tail packageVersion
 ### #' @importFrom jpeg readJPEG
 ### #' @importFrom png readPNG
 ### #' @importFrom Rcpp evalCpp
 ### #' @useDynLib spatstat.sphere
+#' @importFrom spatstat.gui iplot
 #' @name spatstat.sphere
 NULL

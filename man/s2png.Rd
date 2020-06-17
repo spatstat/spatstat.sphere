@@ -10,39 +10,34 @@ s2png(filename, ..., init = FALSE)
 \item{filename}{Name of output file. A temporary file will be generated if it
 none is given.}
 
-\item{...}{Arguments passed on to \code{grDevices::png}
-\describe{
-  \item{filename}{the name of the output file.
-    The page number is substituted if a C integer format is included in
-    the character string, as in the default.  (The result must be less
-    than \code{PATH_MAX} characters long, and may be truncated if not.
-    See \code{\link{postscript}} for further details.)  Tilde expansion
-    is performed where supported by the platform.}
-  \item{width}{the width of the device.}
-  \item{height}{the height of the device.}
-  \item{units}{The units in which \code{height} and \code{width} are
+\item{...}{
+  Arguments passed on to \code{\link[grDevices:png]{grDevices::png}}
+  \describe{
+    \item{\code{width}}{the width of the device.}
+    \item{\code{height}}{the height of the device.}
+    \item{\code{units}}{The units in which \code{height} and \code{width} are
     given.  Can be \code{px} (pixels, the default), \code{in} (inches),
     \code{cm} or \code{mm}.}
-  \item{pointsize}{the default pointsize of plotted text, interpreted as
+    \item{\code{pointsize}}{the default pointsize of plotted text, interpreted as
     big points (1/72 inch) at \code{res} ppi.}
-  \item{bg}{the initial background colour: can be overridden by setting
+    \item{\code{bg}}{the initial background colour: can be overridden by setting
     par("bg").}
-  \item{res}{The nominal resolution in ppi which will be recorded in the
+    \item{\code{res}}{The nominal resolution in ppi which will be recorded in the
     bitmap file, if a positive integer.  Also used for \code{units}
     other than the default, and to convert points to pixels.}
-  \item{type}{character string, one of \code{"Xlib"} or \code{"quartz"}
+    \item{\code{type}}{character string, one of \code{"Xlib"} or \code{"quartz"}
     (some macOS builds) or \code{"cairo"}.  The latter will only be
     available if the system was compiled with support for cairo --
     otherwise \code{"Xlib"} will be used.  The default is set by
     \code{\link{getOption}("bitmapType")} -- the \sQuote{out of the box}
     default is \code{"quartz"} or \code{"cairo"} where available,
     otherwise \code{"Xlib"}.}
-  \item{antialias}{for \code{type = "cairo"}, giving the type of
+    \item{\code{antialias}}{for \code{type = "cairo"}, giving the type of
     anti-aliasing (if any) to be used for fonts and lines (but not
-    fills). See \code{\link{X11}}.  The default is set by
-    \code{\link{X11.options}}.  Also for \code{type = "quartz"}, where
+    fills). See \code{\link[grDevices]{X11}}.  The default is set by
+    \code{\link[grDevices]{X11.options}}.  Also for \code{type = "quartz"}, where
     antialiasing is used unless \code{antialias = "none"}.}
-}}
+  }}
 
 \item{init}{Logical to initialize plot with a blank plot with
 \code{xlim = c(-180,180)} and \code{ylim = c(-90,90)}.}

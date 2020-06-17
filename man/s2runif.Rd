@@ -4,8 +4,16 @@
 \alias{s2runif}
 \title{Generate uniform random points on sphere}
 \usage{
-s2runif(n, region = s2(...), giveup = 1000, warn = TRUE, ..., nsim = 1,
-  drop = TRUE, ex = NULL)
+s2runif(
+  n,
+  region = s2(...),
+  giveup = 1000,
+  warn = TRUE,
+  ...,
+  nsim = 1,
+  drop = TRUE,
+  ex = NULL
+)
 }
 \arguments{
 \item{n}{Number of points. Can be a vector in which case \code{nsim} should be
@@ -19,19 +27,20 @@ algorithm should stop trying to generate new points.}
 
 \item{warn}{Logical. Whether to issue a warning if `n`` is very large. See Details.}
 
-\item{...}{Arguments passed on to \code{s2}
-\describe{
-  \item{radius}{Numeric. Defaults to 1. For convenience this can also be an
+\item{...}{
+  Arguments passed on to \code{\link[=s2]{s2}}
+  \describe{
+    \item{\code{radius}}{Numeric. Defaults to 1. For convenience this can also be an
 object of class \code{"s2region"} from where the radius and unitname then will be
 extracted.}
-  \item{unitname}{Optional. Name of unit of length. Either a single character
+    \item{\code{unitname}}{Optional. Name of unit of length. Either a single character
 string, or a vector of two character strings giving the singular and plural
 forms, respectively.}
-}}
+  }}
 
 \item{nsim}{Number of simulated realisations to be generated.}
 
-\item{drop}{Logical. If \code{nsim = 1`` and}drop = TRUE` (the default), the
+\item{drop}{Logical. If \verb{nsim = 1`` and }drop = TRUE` (the default), the
 result will be a point pattern, rather than a list containing a point pattern.}
 
 \item{ex}{Optional. A point pattern to use as the example. If \code{ex} is given and
@@ -61,7 +70,7 @@ and tests whether they fall in the desired region. It gives up when
 }
 
 If \code{warn = TRUE}, then a warning will be issued if \code{n} is very large. The
-threshold is \code{[spatstat.options("huge.npoints")](spatstat::spatstat.options)}.
+threshold is \verb{[spatstat.options("huge.npoints")](spatstat::spatstat.options)}.
 This warning has no consequences, but it helps to trap a number of common errors.
 }
 \examples{

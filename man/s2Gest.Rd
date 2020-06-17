@@ -21,8 +21,6 @@ this argument; there is a sensible default. If necessary, specify
 \item{correction}{Optional. A character vector containing any selection of
 the options \code{"none"} and \code{"border"} (and possibly others in the
 future).}
-
-\item{\dots}{Ignored.}
 }
 \value{
 An object of class \code{"fv"}, see \code{\link{fv.object}}, which

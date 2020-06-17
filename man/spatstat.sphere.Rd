@@ -3,7 +3,6 @@
 \docType{package}
 \name{spatstat.sphere}
 \alias{spatstat.sphere}
-\alias{spatstat.sphere-package}
 \title{Package documentation for spatstat.sphere}
 \description{
 The package \code{spatstat.sphere} extends the \code{spatstat} package to work with

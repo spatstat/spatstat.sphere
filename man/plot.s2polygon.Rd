@@ -7,8 +7,16 @@
 \alias{plot.s2cellid}
 \title{Plot the outline of a spherical polygon}
 \usage{
-\method{plot}{s2polygon}(x, eps = pi * s2radius(x), ..., add = FALSE,
-  coast = FALSE, longrid = 30, latgrid = 30, flat = FALSE)
+\method{plot}{s2polygon}(
+  x,
+  eps = pi * s2radius(x),
+  ...,
+  add = FALSE,
+  coast = FALSE,
+  longrid = 30,
+  latgrid = 30,
+  flat = FALSE
+)
 }
 \arguments{
 \item{x}{Polygon of class \code{"s2polygon"} to plot, a list of loops on the

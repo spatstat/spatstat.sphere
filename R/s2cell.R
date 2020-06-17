@@ -1,3 +1,9 @@
+ensure_s2_version <- function(){
+  if(packageVersion("s2") > "0.4.2"){
+    stop("This version of spatstat.sphere only works with the s2 package up to version 0.4.2. You need to install this version from github.com/spatstat/s2.")
+  }
+}
+
 #' Make s2cellids from points on the sphere
 #'
 #' Create a vector of s2cellids corresponding to the cells at the given level
@@ -10,6 +16,7 @@
 #' @return A character vector with s2cellids with the additional class `s2cellid`.
 #' @export
 s2cellid <- function(x, level = 30){
+  ensure_s2_version()
   x <- globe::ensure3d(x, single = FALSE)
   x <- matrix(x, ncol = 3)
   id <- s2::S2CellIdFromPoint(x, level)
@@ -89,6 +96,7 @@ print.s2cellid <- function(x, ...){
 #'
 #' @export
 s2cell <- function(x){
+  ensure_s2_version()
   rslt <- s2::S2Cell(x)
   class(rslt$vertices) <- "s2looplist"
   rslt$centers <- s2::S2CellId_ToPoint(x)
@@ -112,6 +120,7 @@ s2cell <- function(x){
 #'
 #' @export
 s2cellstring <- function(x, level = 30L, binary = FALSE, zerotail = binary){
+  ensure_s2_version()
   if(inherits(x, "s2cell"))
     x <- x$ids
   if(!inherits(x, "s2cellid")){
@@ -182,6 +191,7 @@ s2cellstring <- function(x, level = 30L, binary = FALSE, zerotail = binary){
 #' s2covering(s2earth(), min_level = 1, max_level = 1)
 #'
 s2covering <- function(x, max_cells = 8, min_level = 0, max_level = 30, interior = FALSE){
+  ensure_s2_version()
   if(inherits(x, "s2"))
     x <- s2cap(c(1,0,0), height = 2, simplify = FALSE)
   class(x) <- class(x)[1]

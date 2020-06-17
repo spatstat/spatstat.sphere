@@ -102,6 +102,7 @@ print.s2region <- function(x, ...){
 #' @return Logical vector of same length as the number of rows in \code{coords}
 #' @export
 s2contains <- function(coords, region, approx = TRUE){
+  ensure_s2_version()
   if(!inherits(region, "s2region"))
     stop("Argument ", sQuote("region"), " must be a ", sQuote("s2region"), " object.")
   coords <- make_s2coords(coords)
@@ -178,6 +179,7 @@ s2cap <- function(axis, height, dist, ..., simplify = TRUE){
 #' area(region)
 #' @export
 area.s2region <- function(w){
+  ensure_s2_version()
   R <- w$radius
   if(inherits(w, "s2"))
     return(4*pi*R^2)
@@ -204,6 +206,7 @@ area.s2region <- function(w){
 #' @export
 #'
 s2polygon <- function(x, ..., options = NULL){
+  ensure_s2_version()
   # Get options
   given <- names(options)
   valid <- names(formals(s2::S2Polygon))[-1]
@@ -257,6 +260,8 @@ s2polygon <- function(x, ..., options = NULL){
 #' plot(poly3, col = "blue", add = TRUE, eps = pi/100)
 #' plot(poly4, col = "cyan", eps = pi/100)
 s2intersect <- function(x, y){
+  ensure_s2_version()
+  ensure_s2_version()
   ## Check args
   if(!inherits(x, "s2region"))
     stop("Argument ", sQuote("x"), " must be a ", sQuote("s2region"), " object.")
@@ -281,6 +286,7 @@ s2intersect <- function(x, y){
 
 #' @export
 s2union <- function(x, y){
+  ensure_s2_version()
   ## Check args
   if(!inherits(x, "s2region"))
     stop("Argument ", sQuote("x"), " must be a ", sQuote("s2region"), " object.")
@@ -390,6 +396,7 @@ s2lonlatbox.s2region <- function(x, ...){
     rslt$lon <- c(-180, 180)
     rslt$lat <- c(-90, 90)
   } else if(inherits(x, "s2cap")){
+    ensure_s2_version()
     cap <- s2::S2Cap_GetRectBound(x)
     rslt$lon <- cap$lng
     rslt$lat <- cap$lat
@@ -413,6 +420,7 @@ s2lonlatbox.s2region <- function(x, ...){
 #'   latitude interval in degrees.
 #' @export
 s2lonlatbox.default <- function(lon = c(-180, 180), lat = c(-90, 90), ...){
+  ensure_s2_version()
   rslt <- s2(...)
   x <- s2::S2LatLngRect(c(lat[1], lon[1]), c(lat[2], lon[2]))
   rslt$lat <- x$lat

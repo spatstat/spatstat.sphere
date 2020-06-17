@@ -9,15 +9,16 @@ s2polygon(x, ..., options = NULL)
 \arguments{
 \item{x}{List of loops (also called rings) to join as a polygon.}
 
-\item{...}{Arguments passed on to \code{s2}
-\describe{
-  \item{radius}{Numeric. Defaults to 1. For convenience this can also be an
+\item{...}{
+  Arguments passed on to \code{\link[=s2]{s2}}
+  \describe{
+    \item{\code{radius}}{Numeric. Defaults to 1. For convenience this can also be an
 object of class \code{"s2region"} from where the radius and unitname then will be
 extracted.}
-  \item{unitname}{Optional. Name of unit of length. Either a single character
+    \item{\code{unitname}}{Optional. Name of unit of length. Either a single character
 string, or a vector of two character strings giving the singular and plural
 forms, respectively.}
-}}
+  }}
 
 \item{options}{List of options to control how the polygon is assembled. See
 \code{\link[s2:S2Polygon]{s2::S2Polygon}} for available options.}

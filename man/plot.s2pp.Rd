@@ -4,8 +4,7 @@
 \alias{plot.s2pp}
 \title{Plot a spherical point pattern}
 \usage{
-\method{plot}{s2pp}(x, ..., add = FALSE, region = !add, longrid = 30,
-  latgrid = 30)
+\method{plot}{s2pp}(x, ..., add = FALSE, region = !add, longrid = 30, latgrid = 30)
 }
 \arguments{
 \item{x}{Point pattern of class \code{"s2pp"} to plot.}

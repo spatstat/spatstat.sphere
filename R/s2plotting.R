@@ -127,6 +127,7 @@ plot.s2polygon <- function(x, eps = pi * s2radius(x), ..., add = FALSE,
   loops <- s2looplist(x)
   loops <- lapply(loops, function(x) rbind(x, x[1,]))
   if(eps<pi){
+    ensure_s2_version()
     loops <- lapply(loops, s2::S2Point_interpolate, eps = eps)
   }
   if(flat){
@@ -232,8 +233,10 @@ s2segments <- function(x, eps = pi, close = TRUE){
   arcs <- NULL
   for(i in seq_along(loops)){
     l <- globe::ensure3d(loops[[i]], single = FALSE)
-    if(eps<pi)
+    if(eps<pi){
+      ensure_s2_version()
       l <- s2::S2Point_interpolate(l, eps = eps)
+    }
     nn <- nrow(l)
     from <- globe::ensurelonlat(l[-nn,])
     to <- globe::ensurelonlat(l[-1,])

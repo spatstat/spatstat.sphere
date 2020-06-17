@@ -1,7 +1,6 @@
 #' G-function for spherical point pattern
 #'
 #' @param X Spherical point pattern of class `s2pp`
-#' @param \dots Ignored.
 #' @param r Optional. Vector of values for the argument \eqn{r} at which
 #'   \eqn{G(r)} should be evaluated. Users are advised \emph{not} to specify
 #'   this argument; there is a sensible default. If necessary, specify

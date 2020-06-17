@@ -4,8 +4,7 @@
 \alias{s2covering}
 \title{Approximate a region on the sphere by a covering of s2cells}
 \usage{
-s2covering(x, max_cells = 8, min_level = 0, max_level = 30,
-  interior = FALSE)
+s2covering(x, max_cells = 8, min_level = 0, max_level = 30, interior = FALSE)
 }
 \arguments{
 \item{x}{Region to cover. Currently it must be a polygon, cap or full sphere.}
