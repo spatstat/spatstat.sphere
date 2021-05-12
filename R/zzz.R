@@ -6,7 +6,7 @@
 #' @docType package
 #' @import globe
 #' @import s2
-#' @import spatstat
+#' @import spatstat spatstat.geom spatstat.core
 #' @importFrom spatstat.utils splat resolve.defaults do.call.matched %orifnull% check.1.integer
 #' @importFrom grDevices dev.off png
 #' @importFrom graphics abline hist par plot rasterImage segments
@@ -16,6 +16,5 @@
 ### #' @importFrom png readPNG
 ### #' @importFrom Rcpp evalCpp
 ### #' @useDynLib spatstat.sphere
-#' @importFrom spatstat.gui iplot
 #' @name spatstat.sphere
 NULL

@@ -7,9 +7,9 @@
 s2dist(x, y)
 }
 \arguments{
-\item{x}{One or more points in a format acceptable to \code{\link[globe:ensurelonlat]{globe::ensurelonlat()}}.}
+\item{x}{One or more points in a format acceptable to \code{\link[globe:ensure3d]{globe::ensurelonlat()}}.}
 
-\item{y}{One or more points in a format acceptable to \code{\link[globe:ensurelonlat]{globe::ensurelonlat()}}.}
+\item{y}{One or more points in a format acceptable to \code{\link[globe:ensure3d]{globe::ensurelonlat()}}.}
 }
 \value{
 Numeric vector of distances.

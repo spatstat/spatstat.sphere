@@ -255,6 +255,17 @@ s2coastlines <- function(flat = FALSE, ...){
   segments(s[,1], s[,2], s[,3], s[,4], ...)
 }
 
+#' Interactive plotting function
+#'
+#' Generic to plot spherical data on an interactive sphere.
+#'
+#' @param x spherical data object to be plotted interactively.
+#' @param ... Additional parameters passed to methods.
+#' @export
+iplot <- function(x, ...) {
+  UseMethod("iplot")
+}
+
 #' Plot a spherical polygon on an interactive sphere With rotation and zoom
 #'
 #' Plot a spherical polygon on an interactive sphere using [threejs::globejs()].

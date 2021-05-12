@@ -1,7 +1,7 @@
 Package: spatstat.sphere
 Type: Package
 Title: Point patterns on the Sphere
-Version: 0.2-0
+Version: 0.2-1
 Encoding: UTF-8
 Authors@R: c(
     person('Ege', 'Rubak', email='rubak@math.aau.dk', role = c('aut', 'cre')),
@@ -11,15 +11,15 @@ Authors@R: c(
 Description: This package extends the spatstat package to handle point patterns
     on the sphere.
 Depends:
-    R (>= 3.3.0),
-    spatstat (>= 1.64-0),
-    spatstat.gui
+    R (>= 3.5.0),
+    spatstat (>= 2.0)
 Imports:
     s2 (>= 0.2-1),
     globe (>= 1.1-3),
-    spatstat.utils
+    spatstat.core,
+    spatstat.utils,
+    spatstat.geom
 License: GPL (>= 2)
-LazyData: TRUE
 Suggests:
     threejs,
     png,
@@ -27,5 +27,5 @@ Suggests:
     RgoogleMaps,
     testthat
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Remotes: spatstat/s2, baddstats/globe

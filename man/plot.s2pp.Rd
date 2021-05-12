@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{Point pattern of class \code{"s2pp"} to plot.}
 
-\item{...}{parameters passed to \code{\link[globe:globepoints]{globe::globepoints()}} to control view point
+\item{...}{parameters passed to \code{\link[globe:globelines]{globe::globepoints()}} to control view point
 (\code{eye}), orientation (\code{top}), and grapical parameters such as point color
 (\code{col}), point size (\code{cex}), point type (\code{pch}) etc.}
 
