@@ -4,7 +4,7 @@
 \alias{s2polygon}
 \title{Create a s2polygon}
 \usage{
-s2polygon(x, ..., options = NULL)
+s2polygon(x, ..., oriented = FALSE, check = TRUE, options = NULL)
 }
 \arguments{
 \item{x}{List of loops (also called rings) to join as a polygon.}
@@ -20,8 +20,14 @@ string, or a vector of two character strings giving the singular and plural
 forms, respectively.}
   }}
 
-\item{options}{List of options to control how the polygon is assembled. See
-\code{\link[s2:S2Polygon]{s2::S2Polygon}} for available options.}
+\item{oriented}{logical, which defaults to FALSE. Set to TRUE if polygon ring
+directions are known to be correct such that exterior rings are counter
+clockwise and interior rings are clockwise.}
+
+\item{check}{logical, which defaults to TRUE. Throws an error if the polygon is invalid.}
+
+\item{options}{List of class \code{"s2_options"} to control how the polygon is
+assembled. See \code{\link[s2:s2_options]{s2::s2_options()}} for available options and details.}
 }
 \description{
 Create a s2polygon (object of class \code{"s2polygon"}).

@@ -4,7 +4,15 @@
 \alias{plot.s2pp}
 \title{Plot a spherical point pattern}
 \usage{
-\method{plot}{s2pp}(x, ..., add = FALSE, region = !add, longrid = 30, latgrid = 30)
+\method{plot}{s2pp}(
+  x,
+  ...,
+  add = FALSE,
+  region = !add,
+  longrid = 30,
+  latgrid = 30,
+  region_args = list()
+)
 }
 \arguments{
 \item{x}{Point pattern of class \code{"s2pp"} to plot.}
@@ -28,6 +36,8 @@ or \code{NULL} disables longitude lines.}
 \code{add = FALSE}. Either a vector of numbers between -90 and 90 or a single
 numeric used as a stepsize between consecutive latitude lines. Value of zero
 or \code{NULL} disables latitude lines.}
+
+\item{region_args}{list of arguments passed to the plotting function for the region.}
 }
 \value{
 NULL (invisibly)

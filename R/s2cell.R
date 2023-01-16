@@ -1,9 +1,3 @@
-ensure_s2_version <- function(){
-  if(packageVersion("s2") > "0.4.2"){
-    stop("This version of spatstat.sphere only works with the s2 package up to version 0.4.2. You need to install this version from github.com/spatstat/s2.")
-  }
-}
-
 #' Make s2cellids from points on the sphere
 #'
 #' Create a vector of s2cellids corresponding to the cells at the given level
@@ -13,15 +7,17 @@ ensure_s2_version <- function(){
 #' @param x Points on the sphere in a standard format.
 #' @param level Integer between 0 and 30 (incl).
 #'
-#' @return A character vector with s2cellids with the additional class `s2cellid`.
+#' @return A vector of doubles representing s2cellids with the additional class `s2cellid`.
 #' @export
 s2cellid <- function(x, level = 30){
-  ensure_s2_version()
-  x <- globe::ensure3d(x, single = FALSE)
-  x <- matrix(x, ncol = 3)
-  id <- s2::S2CellIdFromPoint(x, level)
-  class(id) <- "s2cellid"
-  return(id)
+  if(!inherits(x, "s2_cell")){
+    x <- globe::ensure3d(x, single = FALSE)
+    x <- matrix(x, ncol = 3)
+    x <- s2::as_s2_cell(s2_point(x[,1], x[,2], x[,3]))
+    x <- s2_cell_parent(x, level)
+  }
+  class(x) <- c("s2cellid", class(x))
+  return(x)
 }
 
 #' Extract s2 cell level from data
@@ -41,15 +37,8 @@ s2cellid <- function(x, level = 30){
 #' id <- s2cellid(x, c(1,30))
 #' s2level(id)
 s2level <- function(x, simplify = FALSE){
-  id <- x$id
-  n <- length(id)
-  lev <- x$lev
-  if(!simplify && n > 1L){
-    if(length(lev) != n){
-      lev <- rep(lev, n)
-    }
-  }
-  if(simplify && n > 1L){
+  lev <- s2::s2_cell_level(x)
+  if(simplify){
     lev <- unique(lev)
     if(length(lev) > 1L){
       stop("Different levels present -- can't simplify to one value!")
@@ -70,10 +59,9 @@ as.s2cellid <- function(...){
   if(!any(ok))
     stop("No valid input provided.")
   ids <- dots[ok]
-  lev <- lapply(ids, s2level)
-  ids <- lapply(ids, function(x) x$id)
-  rslt <- list(id = unlist(ids), level = unlist(lev))
-  class(rslt) <- "s2cellid"
+  cl <- class(ids[[1]])
+  ids <- Reduce(c, ids)
+  class(rslt) <- cl
   return(rslt)
 }
 
@@ -84,22 +72,23 @@ as.s2cellid <- function(...){
 #' @return NULL (invisibly)
 #' @export
 print.s2cellid <- function(x, ...){
-  splat("Object of class s2cellid containing", length(x$id), "ids.")
+  splat("Object of class s2cellid containing", length(x), "ids.")
 }
 
 #' Make a list of s2cells
 #'
 #' Make a list of s2cells
 #'
-#' @param x Input to create cells from. Currently only a vector of s2cellid
-#' tokens are supported.
+#' @param x Input to create cells from. Currently only a vector of s2cellids
+#' are supported.
 #'
 #' @export
 s2cell <- function(x){
-  ensure_s2_version()
-  rslt <- s2::S2Cell(x)
+  rslt <- list(ids = x)
+  polys <- lapply(x, s2::s2_cell_polygon)
+  rslt$vertices <- lapply(polys, function(x) s2looplist(x)[[1]])
   class(rslt$vertices) <- "s2looplist"
-  rslt$centers <- s2::S2CellId_ToPoint(x)
+  rslt$centers <- lapply(x, s2::s2_cell_center)
   class(rslt) <- "s2cell"
   return(rslt)
 }
@@ -109,10 +98,10 @@ s2cell <- function(x){
 #' Retreive string representation of a s2cell
 #'
 #' @param x Input to retrieve string representations from.
-#' Current options are a vector of s2cellid tokens, a list of s2cells, or a
+#' Current options are a vector of s2cellids, a list of s2cells, or a
 #' three-column matrix representing points on the sphere.
 #' @param level Integer between 0 and 30 (incl.) to specify the desired s2cell
-#' level. Defaults to 30 for point data and is ignored for s2cell(id) data.
+#' level. Defaults to 30 for point data and is ignored for s2cell and s2cellid data.
 #' @param binary Logical to request binary representation where four subcells
 #' are represented as 00, 01, 10 and 11 rather than by 0, 1, 2, 3 which is the
 #' default.
@@ -120,14 +109,13 @@ s2cell <- function(x){
 #'
 #' @export
 s2cellstring <- function(x, level = 30L, binary = FALSE, zerotail = binary){
-  ensure_s2_version()
   if(inherits(x, "s2cell"))
     x <- x$ids
   if(!inherits(x, "s2cellid")){
-    ## Now we assume x is in point form
+    ## Here we assume x is in point form
     x <- s2cellid(x, level = level)
   }
-  x <- s2::S2CellId_ToString(x$id)
+  x <- s2::s2_cell_debug_string(x)
   if(!binary)
     return(x)
   str2bin <- function(y, width = 2){
@@ -148,6 +136,25 @@ s2cellstring <- function(x, level = 30L, binary = FALSE, zerotail = binary){
     y <- paste(y, ifelse(level == 29, "00", "0..0"), sep = ",")
   }
   y
+}
+
+s2allcells <- function(level = 0){
+  stopifnot(is.numeric(level) && min(level) >=0 && max(level) <= 6)
+  face_centers <- s2_point(c(1,-1,0,0,0,0), c(0,0,1,-1,0,0), c(0,0,0,0,1,-1))
+  cells <- s2_cell_parent(as_s2_cell(face_centers), level = 0)
+  if(level == 0){
+    return(s2cellid(cells))
+  }
+  chars <- list(as.character(cells))
+  for(i in 1:max(level)){
+    n1 <- as.character(s2_cell_child(cells, k=1))
+    n2 <- as.character(s2_cell_child(cells, k=2))
+    n3 <- as.character(s2_cell_child(cells, k=3))
+    n4 <- as.character(s2_cell_child(cells, k=0))
+    chars[[i+1]] <- c(n1,n2,n3,n4)
+    cells <- s2::s2_cell(chars[[i+1]])
+  }
+  return(s2cellid(s2::s2_cell(Reduce(c, chars[level+1]))))
 }
 
 ## #' Plot the Outline of s2cells on the sphere
@@ -171,32 +178,32 @@ s2cellstring <- function(x, level = 30L, binary = FALSE, zerotail = binary){
 ##   plot.s2polygon(x, ...)
 ## }
 
-#' Approximate a region on the sphere by a covering of s2cells
-#'
-#' Approximate a region on the sphere by a (possibly interior) covering of
-#' s2cells.
-#'
-#' @param x Region to cover. Currently it must be a polygon, cap or full sphere.
-#' @param max_cells Positive integer. Maximal number of cells to use in the
-#' covering.
-#' @param min_level Integer between 0 and 30 specifying the lowest cell level to
-#' use. Must be less than or equal to `max_level`.
-#' @param max_level Integer between 0 and 30 specifying the highest cell level to
-#' use. Must be greater than or equal to `min_level`.
-#' @param interior Logical to get an interior covering.
-#' @return A vector of s2cellids (of class `s2cellid`).
-#' @export
-#' @examples
-#' # Covering of entire sphere at level 1
-#' s2covering(s2earth(), min_level = 1, max_level = 1)
-#'
-s2covering <- function(x, max_cells = 8, min_level = 0, max_level = 30, interior = FALSE){
-  ensure_s2_version()
-  if(inherits(x, "s2"))
-    x <- s2cap(c(1,0,0), height = 2, simplify = FALSE)
-  class(x) <- class(x)[1]
-  rslt <- s2::S2Covering(x = x, max_cells = max_cells, min_level = min_level,
-                         max_level = max_level, interior = interior)
-  class(rslt) <- "s2cellid"
-  return(rslt)
-}
+# #' Approximate a region on the sphere by a covering of s2cells
+# #'
+# #' Approximate a region on the sphere by a (possibly interior) covering of
+# #' s2cells.
+# #'
+# #' @param x Region to cover. Currently it must be a polygon, cap or full sphere.
+# #' @param max_cells Positive integer. Maximal number of cells to use in the
+# #' covering.
+# #' @param min_level Integer between 0 and 30 specifying the lowest cell level to
+# #' use. Must be less than or equal to `max_level`.
+# #' @param max_level Integer between 0 and 30 specifying the highest cell level to
+# #' use. Must be greater than or equal to `min_level`.
+# #' @param interior Logical to get an interior covering.
+# #' @return A vector of s2cellids (of class `s2cellid`).
+# #' @export
+# #' @examples
+# #' # Covering of entire sphere at level 1
+# #' s2covering(s2earth(), min_level = 1, max_level = 1)
+# #'
+# s2covering <- function(x, max_cells = 8, min_level = 0, max_level = 30, interior = FALSE){
+#   if(inherits(x, "s2"))
+#     x <- s2cap(c(1,0,0), height = 2, simplify = FALSE)
+#   class(x) <- class(x)[1]
+#   rslt <- s2::S2Covering(x = x, max_cells = max_cells, min_level = min_level,
+#                          max_level = max_level, interior = interior)
+#   class(rslt) <- "s2cellid"
+#   return(rslt)
+# }
+#

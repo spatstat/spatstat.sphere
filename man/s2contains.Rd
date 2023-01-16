@@ -4,7 +4,7 @@
 \alias{s2contains}
 \title{Test whether points are inside s2region}
 \usage{
-s2contains(coords, region, approx = TRUE)
+s2contains(coords, region, options = s2::s2_options(model = "closed"))
 }
 \arguments{
 \item{coords}{\code{data.frame}, \code{matrix} or \code{list}. Object containing spherical
@@ -16,10 +16,9 @@ are required and assumed to be in x, y, z order (disregarding any names).}
 \item{region}{Region on the sphere where the points occur. Object of class
 \code{"s2region"}.}
 
-\item{approx}{Logical to use approximate containment, which allows points
-very slightly outside a polygonal region, but also ensures that points on the
-border of a polygon are always accepted. Does not affect spherical caps at
-the moment.}
+\item{options}{List of class \code{"s2_options"} to control how containment is
+defined for polygonal regions. See \code{\link[s2:s2_options]{s2::s2_options}} for available options
+and details.}
 }
 \value{
 Logical vector of same length as the number of rows in \code{coords}

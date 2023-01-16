@@ -26,7 +26,7 @@
 #' - A two column matrix with a single row of real numbers and a `colnames`
 #' attribute.
 #'
-#' @return Object of class \code{"s2pp"}.
+#' @return Object of class \code{"s2point"} which is a numeric of length 3.
 #' @export
 #'
 #' @examples

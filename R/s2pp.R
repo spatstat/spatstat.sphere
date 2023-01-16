@@ -1,6 +1,10 @@
 make_s2coords <- function(x){
-  if(inherits(x, "s2pp"))
+  if(inherits(x, "s2pp")){
     return(coords(x))
+  }
+  if(inherits(x, "s2_geography")){
+    x <- cbind(lon = s2::s2_x(x), lat = s2::s2_y(x))
+  }
   lat_names <- c("lat", "latitude")
   lon_names <- c("lon", "long", "longitude", "lng")
   # Handle matrix
@@ -310,13 +314,14 @@ s2borderdist <- function(x, region = NULL){
     stop("An s2region must be supplied.")
   x <- globe::ensure3d(x, single = FALSE)
   if(inherits(region, "s2polygon")){
-    ## Extract loops and repeat first vertex in end
-    loops <- lapply(region$loops, function(x) rbind(x, x[1,]))
+    x <- s2::as_s2_point(x)
+    ## Loops as lines
+    loop_lines <- lapply(region$loops, function(x) s2::s2_make_line(x[,1], x[,2]))
     ## List giving the distance from each point to each loop
-    loopdist <- lapply(loops, S2Polyline_dist, x = x)
+    loopdist <- lapply(loop_lines, s2::s2_distance, x = x, radius = s2radius(region))
     ## Shortest border distance for each point
     loopdist <- Reduce(pmin, loopdist)
-    return(s2radius(region)*loopdist)
+    return(loopdist)
     # return(s2::S2Polygon_border_dist(x, region$loops))
   }
   if(inherits(region, "s2") | inherits(region, "s2cap") && region$height >= 2*s2radius(region))
@@ -334,7 +339,11 @@ s2borderdist <- function(x, region = NULL){
 #'   the geometrical validity of the resulting pattern.
 #'
 #' @return Point pattern on the sphere of class `"s2pp"`.
-#' @export
+#'
+#' @importFrom spatstat.geom superimpose
+#' @exportS3Method superimpose s2pp
+#' @export superimpose
+#' @export superimpose.s2pp
 #'
 #' @examples
 #' p1 <- s2runif(10)

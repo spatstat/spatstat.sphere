@@ -5,10 +5,13 @@
 \alias{s2union}
 \title{Intersection or union of two spherical regions}
 \usage{
-s2intersect(x, y)
+s2intersect(x, y, options = s2::s2_options())
 }
 \arguments{
 \item{x, y}{Region on the sphere of class \code{"s2region"}.}
+
+\item{options}{List of class \code{"s2_options"} to control how borders are treated
+polygonal regions. See \code{\link[s2:s2_options]{s2::s2_options}} for available options and details.}
 }
 \value{
 Region on the sphere of class \code{"s2region"}.

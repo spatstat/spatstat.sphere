@@ -6,15 +6,15 @@
 #' @docType package
 #' @import globe
 #' @import s2
-#' @import spatstat spatstat.geom spatstat.core
+#' @import spatstat.geom spatstat.core
 #' @importFrom spatstat.utils splat resolve.defaults do.call.matched %orifnull% check.1.integer
 #' @importFrom grDevices dev.off png
 #' @importFrom graphics abline hist par plot rasterImage segments
 #' @importFrom stats rbinom runif
-#' @importFrom utils tail packageVersion
+#' @importFrom utils tail
 ### #' @importFrom jpeg readJPEG
 ### #' @importFrom png readPNG
-### #' @importFrom Rcpp evalCpp
-### #' @useDynLib spatstat.sphere
+#' @importFrom Rcpp evalCpp
+#' @useDynLib spatstat.sphere, .registration = TRUE
 #' @name spatstat.sphere
 NULL

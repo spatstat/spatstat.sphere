@@ -54,14 +54,14 @@ Point pattern datasets can also be created by the function \code{\link{s2pp}}.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{s2pp}: Method for s2pp objects.
+\item \code{as.s2pp(s2pp)}: Method for s2pp objects.
 
-\item \code{data.frame}: Method for data frames.
+\item \code{as.s2pp(data.frame)}: Method for data frames.
 
-\item \code{matrix}: Method for matrices.
+\item \code{as.s2pp(matrix)}: Method for matrices.
 
-\item \code{default}: Default method.
+\item \code{as.s2pp(default)}: Default method.
+
 }}
-
 \keyword{manip}
 \keyword{spatial}

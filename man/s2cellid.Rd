@@ -12,7 +12,7 @@ s2cellid(x, level = 30)
 \item{level}{Integer between 0 and 30 (incl).}
 }
 \value{
-A character vector with s2cellids with the additional class \code{s2cellid}.
+A vector of doubles representing s2cellids with the additional class \code{s2cellid}.
 }
 \description{
 Create a vector of s2cellids corresponding to the cells at the given level

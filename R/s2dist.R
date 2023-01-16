@@ -38,6 +38,16 @@ s2distHaversine <- function(lat1, long1, lat2, long2){
   2 * asin(sqrt(sin((lat1 - lat2)/2)^2 + cos(lat1)*cos(lat2)*sin((long1 - long2)/2)^2))
 }
 
+#' Pairwise Distances Between Points on Sphere
+#'
+#' @param X Point pattern on the sphere of class `"s2pp"`.
+#' @param ... Ignored.
+#'
+#' @seealso spatstat.geom::pairdist.
+#'
+#' @importFrom spatstat.geom pairdist
+#' @return Numeric matrix of distances.
+#' @export
 pairdist.s2pp <- function(X, ...){
   x <- as.data.frame(X, format = "lon,lat")
   n <- nrow(x)
@@ -53,19 +63,54 @@ pairdist.s2pp <- function(X, ...){
   return(rslt)
 }
 
+#' Close Pairs of Points on Sphere
+#'
+#' @param X Point pattern on the sphere of class `"s2pp"`.
+#' @param rmax Numeric
+#' @param ... Further arguments passed to `[spatstat.geom::closepairs.pp3()]`.
+#' Notably the argument `what` can be convenient.
+#' @param chordal logical. Cordal distance cutting through the earth if `TRUE`.
+#' Otherwise, distance along the surface of the sphere if `FALSE`.
+#'
+#' @seealso spatstat.geom::closepairs.
+#'
+#' @importFrom spatstat.geom closepairs
+#' @return List with info about close pairs of points
+#' @exportS3Method closepairs s2pp
+#' @export closepairs
+#' @export closepairs.s2pp
 closepairs.s2pp <- function(X, rmax, ..., chordal = FALSE){
   XX <- s2coords(X)
   rad <- s2radius(X)
   rmax <- rmax/rad
   if(!chordal)
     rmax <- 2*sin(rmax/2)
-  closelist <- closepairs.pp3(pp3(XX[,1], XX[,2], XX[,3], box3(c(-1,1))), rmax = rmax, ...)
-  if(!chordal)
-    closelist$d <- asin(closelist$d/2)
-  closelist$d <- 2*rad*closelist$d
+  XX <- spatstat.geom::pp3(XX[,1], XX[,2], XX[,3], box3(c(-1,1)))
+  closelist <- spatstat.geom::closepairs.pp3(XX, rmax = rmax, ...)
+  if(!is.null(closelist$d)){
+    if(!chordal){
+      closelist$d <- asin(closelist$d/2)
+    }
+    closelist$d <- 2*rad*closelist$d
+  }
   return(closelist)
 }
 
+#' Nearest Neighbour Distance for Points on Sphere
+#'
+#' @param X Point pattern on the sphere of class `"s2pp"`.
+#' @param k Positive integer to calculate the kth nearest neighbour.
+#' @param ... Further arguments passed to `[spatstat.geom::nndist.pp3()]`.
+#' Only the argument `by` can be used by this function.
+#' @param chordal logical. Cordal distance cutting through the earth if `TRUE`.
+#' Otherwise, distance along the surface of the sphere if `FALSE`.
+#'
+#' @seealso spatstat.geom::closepairs.
+#'
+#' @importFrom spatstat.geom closepairs
+#' @return Numeric vector (if `length(k)`=1) or matrix (if `length(k)`>1) of distances.
+#' If the additional argument `by` is used this may be a `data.frame`.
+#' @export
 nndist.s2pp <- function(X, ..., k = 1, chordal = FALSE){
   XX <- s2coords(X)
   rad <- s2radius(X)

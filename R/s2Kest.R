@@ -68,6 +68,7 @@ s2Kest <- function(X, ..., r = NULL, rmax = NULL, breaks = NULL, correction = NU
                     ifelse(!angular_arg, "%s[pois](r)", "%s[pois](theta)")),
            desc = desc,
            fname = "K",
+           unitname = s2radius(dom, format = "list")$units,
            yexp = ylab
   )
 

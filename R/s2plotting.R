@@ -19,14 +19,16 @@
 #' `add = FALSE`. Either a vector of numbers between -90 and 90 or a single
 #' numeric used as a stepsize between consecutive latitude lines. Value of zero
 #' or `NULL` disables latitude lines.
+#' @param region_args list of arguments passed to the plotting function for the region.
 #'
 #' @return NULL (invisibly)
 #' @export
-plot.s2pp <- function(x, ..., add = FALSE, region = !add, longrid = 30, latgrid = 30){
+plot.s2pp <- function(x, ..., add = FALSE, region = !add, longrid = 30, latgrid = 30,
+                      region_args = list()){
   verifyclass(x, "s2pp")
   co <- s2coords(x)
   dots <- list(...)
-  if(inherits(x, "region")){
+  if(inherits(region, "s2region")){
     show.region <- TRUE
     ok <- s2contains(co, region)
   } else{
@@ -43,8 +45,9 @@ plot.s2pp <- function(x, ..., add = FALSE, region = !add, longrid = 30, latgrid 
     globeearth(gdata = NULL, runlen = NULL, eye = dots$eye, top = dots$top)
     drawlonlatgrid(longrid = longrid, latgrid = latgrid, eye = dots$eye, top = dots$top)
   }
-  if(show.region && !inherits(region, "s2"))
-    plot(region, add = TRUE)
+  if(show.region && !inherits(region, "s2")){
+    do.call(plot, args = append(list(x = region, add = TRUE), region_args))
+  }
   globepoints(co, ...)
   return(invisible(NULL))
 }
@@ -114,6 +117,14 @@ drawlonlatgrid <- function(longrid, latgrid, eye = NULL, top = NULL, ..., do.plo
 plot.s2polygon <- function(x, eps = pi * s2radius(x), ..., add = FALSE,
                            coast = FALSE, longrid = 30, latgrid = 30,
                            flat = FALSE){
+  # Catch s2cells/s2cellids
+  if(inherits(x, "s2cellid")){
+    x <- s2cell(x)
+  }
+  if(inherits(x, "s2cell")){
+    x <- x$vertices
+  }
+
   if(!add){
     # Plot args for flat/globe-earth
     args <- resolve.defaults(list(col = "gray", lwd = 1), list(...))
@@ -125,13 +136,11 @@ plot.s2polygon <- function(x, eps = pi * s2radius(x), ..., add = FALSE,
   }
   eps <- eps/s2radius(x)
   loops <- s2looplist(x)
-  loops <- lapply(loops, function(x) rbind(x, x[1,]))
   if(eps<pi){
-    ensure_s2_version()
-    loops <- lapply(loops, s2::S2Point_interpolate, eps = eps)
+    loops <- lapply(loops, s2interpolate, eps = eps, radius = 1)
   }
   if(flat){
-    s <- s2segments(loops, close = FALSE)
+    s <- s2segments(loops)
     segments(s[,"fromlon"], s[,"fromlat"], s[,"tolon"], s[,"tolat"], ...)
   } else{
     lapply(loops, globelines, ...)
@@ -224,18 +233,49 @@ s2png <- function(filename, ..., init = FALSE){
 #   return(img)
 # }
 
-s2segments <- function(x, eps = pi, close = TRUE){
-  if(inherits(x, "s2polygon"))
+s2interpolate <- function(x, eps = pi, radius = 1){
+  if(eps>=pi*radius){
+    return(x)
+  }
+  single <- FALSE
+  if(is.data.frame(x) | is.matrix(x)){
+    x <- list(x)
+    single <- TRUE
+  }
+  # Put coords in right format (at the moment first 3d then lng,lat)
+  x <- lapply(x, make_s2coords) ## Make 3d coords
+  x <- lapply(x, globe::ensurelonlat)
+  x <- lapply(x, as.data.frame)
+  interpolate_one <- function(loop){
+    lin <- s2::s2_make_line(loop$lon, loop$lat)
+    len <- s2::s2_length(lin, radius = radius)
+    dist <- c(seq(0, len, by = eps), len)
+    pts <- s2::s2_interpolate(lin, distance = dist, radius = radius)
+    coo <- wk::wk_coords(wk::wkb(s2_as_binary(pts)))
+    return(data.frame(lon = coo$x, lat = coo$y))
+  }
+  rslt <- lapply(x, interpolate_one)
+  if(single){
+    rslt <- rslt[[1]]
+  }
+  return(rslt)
+}
+
+s2segments <- function(x, eps = pi, radius = 1){
+  if(inherits(x, "s2polygon")){
     x <- x$loops
+    radius <- s2radius(x)
+  }
+  if(inherits(x, "s2")){
+    x <- list()
+  }
+  eps <- eps/radius
   loops <- x
-  if(close)
-    loops <- lapply(loops, function(x) rbind(x, x[1,]))
   arcs <- NULL
   for(i in seq_along(loops)){
     l <- globe::ensure3d(loops[[i]], single = FALSE)
     if(eps<pi){
-      ensure_s2_version()
-      l <- s2::S2Point_interpolate(l, eps = eps)
+      l <- s2interpolate(l, eps = eps, radius = 1)
     }
     nn <- nrow(l)
     from <- globe::ensurelonlat(l[-nn,])
@@ -291,14 +331,16 @@ iplot.s2polygon <- function(x, ..., use_png = FALSE, eps = pi * s2radius(x)){
     stop("Package ", sQuote("threejs"), " is required for interactive plotting.")
 
   # Catch s2cells/s2cellids
-  if(inherits(x, "s2cellid"))
+  if(inherits(x, "s2cellid")){
     x <- s2cell(x)
-  if(inherits(x, "s2cell"))
-    x <- s2looplist(x$vertices)
+  }
+  if(inherits(x, "s2cell")){
+    x <- x$vertices
+  }
   args <- resolve.defaults(list(...), list(arcsHeight = 0.1, arcsLwd = 3, arcsColor = "red",
                            arcsOpacity = 1))
   if(!use_png){
-    arcs <- s2segments(x, eps = eps, close = TRUE)
+    arcs <- s2segments(x, eps = eps)
     extraargs <- if(!is.null(arcs)) append(list(arcs = arcs), args) else args
     # img <- system.file("images/world.jpg", package = "threejs")
     globeplot <- do.call(threejs::globejs, extraargs)
@@ -360,8 +402,6 @@ iplot.s2pp <- function(x, ...){
   region <- s2region(x)
   if(inherits(region, "s2cap"))
     stop("Can't handle cap yet.")
-  if(inherits(region, "s2"))
-    region <- s2polygon(list(), radius = s2radius(region), unitname = region$units)
   args <- list(lat = ll$lat, long = ll$lon, x = region)
   args <- resolve.defaults(args, list(...), list(color = "cyan", pointsize = 2, value = 0))
   globeplot <- do.call(iplot.s2polygon, args)

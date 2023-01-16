@@ -31,7 +31,7 @@ s2 <- function(radius = 1, unitname = NULL, ...){
 #' earth <- s2earth()
 #' area(earth)
 s2earth <- function(){
-  s2(radius = 6378.1, unitname = "km")
+  s2(radius = 6371.01, unitname = "km")
 }
 
 #' Radius of sphere
@@ -94,22 +94,26 @@ print.s2region <- function(x, ...){
 #' Test whether points are inside s2region
 #'
 #' @inheritParams s2pp
-#' @param approx Logical to use approximate containment, which allows points
-#' very slightly outside a polygonal region, but also ensures that points on the
-#' border of a polygon are always accepted. Does not affect spherical caps at
-#' the moment.
+#' @param options List of class `"s2_options"` to control how containment is
+#' defined for polygonal regions. See [`s2::s2_options`] for available options
+#' and details.
 #'
 #' @return Logical vector of same length as the number of rows in \code{coords}
 #' @export
-s2contains <- function(coords, region, approx = TRUE){
-  ensure_s2_version()
+s2contains <- function(coords, region, options = s2::s2_options(model = "closed")){
   if(!inherits(region, "s2region"))
     stop("Argument ", sQuote("region"), " must be a ", sQuote("s2region"), " object.")
   coords <- make_s2coords(coords)
-  if(inherits(region, "s2polygon"))
-    return(s2::S2Polygon_Contains(region, coords, approx = approx))
-  if(inherits(region, "s2cap"))
-    return(s2::S2Cap_Contains(region, coords))
+  if(inherits(region, "s2polygon")){
+    return(s2::s2_contains(region$poly, s2::as_s2_point(coords), options = options))
+  }
+  if(inherits(region, "s2cap")){
+    if(region$height<0){
+      return(rep(FALSE, nrow(coords)))
+    }
+    a <- region$axis
+    return(s2::s2_dwithin(s2::s2_point(a[1], a[2], a[3]), s2::as_s2_point(coords), distance = acos(1-region$height)))
+  }
   if(inherits(region, "s2"))
     return(rep(TRUE, nrow(coords)))
   stop("Can't check point containment for this type of s2region.")
@@ -147,8 +151,10 @@ s2cap <- function(axis, height, dist, ..., simplify = TRUE){
       stopifnot(is.numeric(dist) && length(dist) == 1 && dist >= 0)
       dist <- dist/rad
       # Check dist is at most circumfrence/2
-      if(dist >= pi)
+      if(dist >= pi){
         warning("dist is bigger than the maximal distance on the given sphere. Returning a full sphere.")
+        dist <- pi
+      }
       # Convert to height
       height <- 1-cos(dist)
     }
@@ -171,26 +177,27 @@ s2cap <- function(axis, height, dist, ..., simplify = TRUE){
 #' Area of s2region
 #'
 #' @param w Object of class \code{"s2region"}.
+#' @importFrom spatstat.geom area
+#' @export area
 #'
 #' @examples
 #' region <- s2(radius = 2)
 #' area(region)
 #' region <- s2cap(axis = c(lon=0,lat=0), height = 1, radius = 2)
 #' area(region)
-#' @export
+#' @exportS3Method area s2region
+#' @export area.s2region
 area.s2region <- function(w){
-  ensure_s2_version()
   R <- w$radius
   if(inherits(w, "s2"))
     return(4*pi*R^2)
   if(inherits(w, "s2cap"))
     return(2*pi*R^2*max(0, w$height))
   if(inherits(w, "s2lonlatbox")){
-    w <- list(lat = w$lat, lng = w$lon)
-    return(R^2*s2::S2LatLngRect_area(w))
+    stop("Not implemented for box yet")
   }
   if(inherits(w, "s2polygon"))
-    return(R^2*sum(w$areas * ifelse(w$holes, -1, 1)))
+    return(s2_area(w$poly, radius = R))
   stop("Unknown domain type.")
 }
 
@@ -199,26 +206,26 @@ area.s2region <- function(w){
 #' Create a s2polygon (object of class `"s2polygon"`).
 #'
 #' @param x List of loops (also called rings) to join as a polygon.
-#' @param options List of options to control how the polygon is assembled. See
-#' [`s2::S2Polygon`] for available options.
+#' @param options List of class `"s2_options"` to control how the polygon is
+#' assembled. See [`s2::s2_options()`] for available options and details.
+#' @param oriented logical, which defaults to FALSE. Set to TRUE if polygon ring
+#' directions are known to be correct such that exterior rings are counter
+#' clockwise and interior rings are clockwise.
+#' @param check logical, which defaults to TRUE. Throws an error if the polygon is invalid.
 #' @inheritDotParams s2
 #'
 #' @export
 #'
-s2polygon <- function(x, ..., options = NULL){
-  ensure_s2_version()
-  # Get options
-  given <- names(options)
-  valid <- names(formals(s2::S2Polygon))[-1]
-  ok <- is.element(given, valid)
-  if(any(!ok))
-    warning("Some given options are not valid arguments of s2::S2Polygon and will be ignored.")
-  options <- options[ok]
+s2polygon <- function(x, ..., oriented = FALSE, check = TRUE, options = NULL){
+  if(!inherits(x, "s2_geography")){
   # Make sure x is a list of things
   if(is.data.frame(x) | is.matrix(x)){
     x <- list(x)
   }
-  x <- lapply(x, make_s2coords)
+  # Put coords in right format (at the moment first 3d then lng,lat)
+  x <- lapply(x, make_s2coords) ## Make 3d coords
+  x <- lapply(x, globe::ensurelonlat)
+  x <- lapply(x, as.data.frame)
   n <- sapply(x, nrow)
   bad <- (n < 3)
   if(any(bad)){
@@ -226,15 +233,19 @@ s2polygon <- function(x, ..., options = NULL){
       stop("Loops must have three or more points.")
     warning(paste(sum(bad), "of the provided loops discarded due to having less than three points."))
     x <- x[!bad]
+    n <- n[!bad]
+  }
+  coo <- Reduce(rbind, x)
+  ## Construct polygon using s2 package
+  x <- s2::s2_make_polygon(coo$lon, coo$lat, ring_id = rep.int(seq_along(n), n),
+                           oriented = oriented, check = check)
   }
   ## Initiate result
   rslt <- s2(...)
-  ## Construct polygon using s2 package
-  poly <- do.call(s2::S2Polygon, c(list(x=x), options))
-  ## Fix bound format
-  names(poly$bound)[names(poly$bound) == "lng"] <- "lon"
-  poly$bound <- poly$bound[c("lon", "lat")]
-  rslt <- c(rslt, poly)
+  rslt$poly <- x
+  rslt$loops <- s2looplist(x)
+  ## Bound
+  rslt$bound <- s2lonlatbox.s2_geography(x)
   class(rslt) <- c("s2polygon", "s2region")
   return(rslt)
 }
@@ -244,9 +255,12 @@ s2polygon <- function(x, ..., options = NULL){
 #' Intersection or union of two objects of class `"s2region"`.
 #'
 #' @param x,y Region on the sphere of class `"s2region"`.
+#' @param options List of class `"s2_options"` to control how borders are treated
+#' polygonal regions. See [`s2::s2_options`] for available options and details.
 #'
 #' @return Region on the sphere of class `"s2region"`.
 #' @aliases s2union
+#' @importFrom wk wk_coords wkb
 #' @export
 #' @examples
 #' loop1 <- cbind(lon = c(0,60,60,0), lat = c(-40,-40,40,40))
@@ -259,16 +273,14 @@ s2polygon <- function(x, ..., options = NULL){
 #' plot(poly2, col = "green", add = TRUE, eps = pi/100)
 #' plot(poly3, col = "blue", add = TRUE, eps = pi/100)
 #' plot(poly4, col = "cyan", eps = pi/100)
-s2intersect <- function(x, y){
-  ensure_s2_version()
-  ensure_s2_version()
+s2intersect <- function(x, y, options = s2::s2_options()){
   ## Check args
   if(!inherits(x, "s2region"))
     stop("Argument ", sQuote("x"), " must be a ", sQuote("s2region"), " object.")
   if(!inherits(y, "s2region"))
     stop("Argument ", sQuote("y"), " must be a ", sQuote("s2region"), " object.")
   if(!all.equal(s2radius(x), s2radius(y)) | !identical(x$units, y$units))
-    stop("Regions are defined on spheres with different radii.")
+    stop("Regions are defined on spheres with different radii and/or units.")
 
   ## If one argument is a full sphere we can just return the other
   if(inherits(x, "s2") | (inherits(x, "s2cap") && x$height >= 2))
@@ -280,20 +292,22 @@ s2intersect <- function(x, y){
   if(!inherits(x, "s2polygon") || !inherits(y, "s2polygon"))
     stop("Can only do intersections of two polygons at the moment.")
 
-  rslt <- s2::S2Polygon_intersection(x$loops, y$loops)
+  xy <- s2::s2_intersection(x$poly, y$poly, options = options)
+  rslt <- list(poly = xy,
+               loops = s2looplist(xy),
+               bound = s2lonlatbox(xy))
   return(wraps2polygon(rslt, s2(x)))
 }
 
 #' @export
-s2union <- function(x, y){
-  ensure_s2_version()
+s2union <- function(x, y, options = s2::s2_options()){
   ## Check args
   if(!inherits(x, "s2region"))
     stop("Argument ", sQuote("x"), " must be a ", sQuote("s2region"), " object.")
   if(!inherits(y, "s2region"))
     stop("Argument ", sQuote("y"), " must be a ", sQuote("s2region"), " object.")
   if(!isTRUE(all.equal(s2radius(x), s2radius(y))) | !identical(x$units, y$units))
-    stop("Regions are defined on spheres with different radii or units.")
+    stop("Regions are defined on spheres with different radii and/or units.")
 
   ## If one argument is a full sphere we can just return it
   if(inherits(x, "s2") | (inherits(x, "s2cap") && x$height >= 2))
@@ -309,7 +323,10 @@ s2union <- function(x, y){
   if(!inherits(x, "s2polygon") || !inherits(y, "s2polygon"))
     stop("Can only do unions of two polygons at the moment.")
 
-  rslt <- s2::S2Polygon_union(x$loops, y$loops)
+  xy <- s2::s2_union(x$poly, y$poly, options = options)
+  rslt <- list(poly = xy,
+               loops = s2looplist(xy),
+               bound = s2lonlatbox(xy))
   return(wraps2polygon(rslt, s2(x)))
 }
 
@@ -339,15 +356,26 @@ wraps2polygon <- function(poly, sphere){
 #' z <- s2looplist(x, s2polygon(loop1))
 s2looplist <- function(...){
   dots <- list(...)
+  if(length(dots) == 1L && is.list(dots[[1L]]) && length(dots[[1L]]) == 1L){
+    dots <- dots[[1L]]
+  }
   extractloops <- function(x){
-    if(inherits(x, "s2cellid"))
+    if(inherits(x, "s2cellid")){
       x <- s2cell(x)
-    if(inherits(x, "s2cell"))
-      return(x$vertices)
-    if(inherits(x, "s2looplist"))
+    }
+    if(inherits(x, "s2cell")){
+      x <- x$vertices
+    }
+    if(inherits(x, "s2looplist")){
       return(x)
-    if(inherits(x, "s2polygon"))
+    }
+    if(inherits(x, "s2polygon")){
       return(x$loops)
+    }
+    if(inherits(x, "s2_geography")){
+      coo <- wk::wk_coords(wk::wkb(s2_as_binary(x)))
+      return(split(data.frame(lon = coo$x, lat = coo$y), coo$ring_id))
+    }
     return(list(globe::ensure3d(x, single = FALSE)))
   }
   loops <- lapply(dots, extractloops)
@@ -360,26 +388,24 @@ s2looplist <- function(...){
 #'
 #' Generic function to extract or construct a box in longitude and latitude coordinates.
 #'
-#' @param ... Parameters passed to methods. For `s2lonlatbox.s2region` only
-#'   first argument (named `x`) is used and the rest ignored. For
-#'   `s2lonlatbox.default` the first two arguments (named `lon` and `lat`) are
-#'   used to define the region and the rest are passed to [s2()] to define the
-#'   radius and units of the underlying sphere.
+#' @param ... Parameters passed to methods. For `s2lonlatbox.s2region` and
+#' `s2lonlatbox.s2_geography` only first argument (named `x`) is used and the
+#' rest ignored. For `s2lonlatbox.default` the first two arguments (named `lon`
+#' and `lat`) are used to define the region and the rest are passed to [s2()] to
+#' define the radius and units of the underlying sphere.
 #'
 #' @return Box in longitude and latitude coordinates (of class `"s2lonlatbox"`).
 #' @seealso s2lonlatbox.s2region s2lonlatbox.default
 #' @export
 #'
 #' @examples
-#' cap <- s2cap(c(1, 0, 0), h = 0.1)
-#' s2lonlatbox(cap)
 #' s2lonlatbox(lon = c(-30, 30), lat = c(45, 90))
 #' ## Very large box crossing the 180th meridian
 #' big <- s2lonlatbox(lon = c(1, -1), lat = c(-90, 90))
-#' area(big)
+#' # area(big) # Not implemented yet
 #' ## Very small box **not** crossing the 180th meridian
 #' small <- s2lonlatbox(lon = c(-1, 1), lat = c(-90, 90))
-#' area(small)
+#' # area(small) # Not implemented yet
 #'
 s2lonlatbox <- function(...){
   UseMethod("s2lonlatbox")
@@ -396,10 +422,7 @@ s2lonlatbox.s2region <- function(x, ...){
     rslt$lon <- c(-180, 180)
     rslt$lat <- c(-90, 90)
   } else if(inherits(x, "s2cap")){
-    ensure_s2_version()
-    cap <- s2::S2Cap_GetRectBound(x)
-    rslt$lon <- cap$lng
-    rslt$lat <- cap$lat
+    stop("not implemented for cap.")
   } else if(inherits(x, "s2polygon")){
     rslt$lon <- x$bound$lon
     rslt$lat <- x$bound$lat
@@ -411,20 +434,32 @@ s2lonlatbox.s2region <- function(x, ...){
 }
 
 #' @describeIn s2lonlatbox Default method to generate `"s2lonlatbox"` from a
-#'   longitude and latitude interval.
+#' longitude and latitude interval.
 #' @param lon Numeric of length 2 specifying longitude interval in degrees. For
-#'   boxes not crossing the 180 degree meridian the input should be such that
-#'   `-180 <= lon[1] < lon[2] <= 180`. For boxes crossing the 180 degree meridian
-#'   the input shoud be such that `-180 <= lon[2] < lon[1] <= 180`.
+#' boxes not crossing the 180 degree meridian the input should be such that
+#' `-180 <= lon[1] < lon[2] <= 180`. For boxes crossing the 180 degree meridian
+#' the input shoud be such that `-180 <= lon[2] < lon[1] <= 180`.
 #' @param lat Numeric of length 2 with `-90 <= lat[1] < lat[2] <= 90` specifying
-#'   latitude interval in degrees.
+#' latitude interval in degrees.
+#' @inheritDotParams s2
 #' @export
 s2lonlatbox.default <- function(lon = c(-180, 180), lat = c(-90, 90), ...){
-  ensure_s2_version()
+  x <- s2::s2_make_polygon(lon = c(lon[1], lon[2], lon[2], lon[1]),
+                           lat = c(lat[1], lat[1], lat[2], lat[2]))
+  rslt <- s2lonlatbox.s2_geography(x, ...)
+  return(rslt)
+}
+
+#' @describeIn s2lonlatbox Method to generate `"s2lonlatbox"` from an object of
+#' class `"s2_geography"`.
+#' @param x object of class `"s2_geography"`.
+#' @inheritDotParams s2
+#' @export
+s2lonlatbox.s2_geography <- function(x, ...){
   rslt <- s2(...)
-  x <- s2::S2LatLngRect(c(lat[1], lon[1]), c(lat[2], lon[2]))
-  rslt$lat <- x$lat
-  rslt$lon <- x$lng
+  b <- s2::s2_bounds_rect(x)
+  rslt$lat <- c(b$lat_lo, b$lat_hi)
+  rslt$lon <- c(b$lng_lo, b$lng_hi)
   class(rslt) <- c("s2lonlatbox", "s2region")
   return(rslt)
 }

@@ -12,7 +12,7 @@ three Eucledian coordinates (x,y,z) or two spherical coordinates
 (latitude,longitude). See Details.}
 }
 \value{
-Object of class \code{"s2pp"}.
+Object of class \code{"s2point"} which is a numeric of length 3.
 }
 \description{
 Make an object of class \code{"s2point"} representing a single point

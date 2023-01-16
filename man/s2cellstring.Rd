@@ -8,11 +8,11 @@ s2cellstring(x, level = 30L, binary = FALSE, zerotail = binary)
 }
 \arguments{
 \item{x}{Input to retrieve string representations from.
-Current options are a vector of s2cellid tokens, a list of s2cells, or a
+Current options are a vector of s2cellids, a list of s2cells, or a
 three-column matrix representing points on the sphere.}
 
 \item{level}{Integer between 0 and 30 (incl.) to specify the desired s2cell
-level. Defaults to 30 for point data and is ignored for s2cell(id) data.}
+level. Defaults to 30 for point data and is ignored for s2cell and s2cellid data.}
 
 \item{binary}{Logical to request binary representation where four subcells
 are represented as 00, 01, 10 and 11 rather than by 0, 1, 2, 3 which is the

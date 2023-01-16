@@ -7,8 +7,8 @@
 s2cell(x)
 }
 \arguments{
-\item{x}{Input to create cells from. Currently only a vector of s2cellid
-tokens are supported.}
+\item{x}{Input to create cells from. Currently only a vector of s2cellids
+are supported.}
 }
 \description{
 Make a list of s2cells
