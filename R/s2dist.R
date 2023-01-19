@@ -77,7 +77,6 @@ pairdist.s2pp <- function(X, ...){
 #' @importFrom spatstat.geom closepairs
 #' @return List with info about close pairs of points
 #' @exportS3Method closepairs s2pp
-#' @export closepairs
 #' @export closepairs.s2pp
 closepairs.s2pp <- function(X, rmax, ..., chordal = FALSE){
   XX <- s2coords(X)

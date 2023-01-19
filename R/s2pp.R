@@ -342,7 +342,6 @@ s2borderdist <- function(x, region = NULL){
 #'
 #' @importFrom spatstat.geom superimpose
 #' @exportS3Method superimpose s2pp
-#' @export superimpose
 #' @export superimpose.s2pp
 #'
 #' @examples

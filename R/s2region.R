@@ -177,14 +177,13 @@ s2cap <- function(axis, height, dist, ..., simplify = TRUE){
 #' Area of s2region
 #'
 #' @param w Object of class \code{"s2region"}.
-#' @importFrom spatstat.geom area
-#' @export area
 #'
 #' @examples
 #' region <- s2(radius = 2)
 #' area(region)
 #' region <- s2cap(axis = c(lon=0,lat=0), height = 1, radius = 2)
 #' area(region)
+#' @importFrom spatstat.geom area
 #' @exportS3Method area s2region
 #' @export area.s2region
 area.s2region <- function(w){

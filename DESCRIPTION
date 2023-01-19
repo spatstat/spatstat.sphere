@@ -11,19 +11,15 @@ Authors@R: c(
 Description: This package extends the spatstat package to handle point patterns
     on the sphere.
 Depends:
-    R (>= 3.5.0)
+    R (>= 3.5.0),
+    spatstat.explore
 Imports:
     s2 (>= 1.0.5),
     globe (>= 1.1-3),
-    spatstat.core,
     spatstat.utils,
     spatstat.geom,
-    wk (>= 0.7.1),
-    Rcpp
+    wk (>= 0.7.1)
 License: GPL (>= 2)
-LinkingTo: 
-    Rcpp,
-    s2
 Suggests:
     threejs,
     png,
