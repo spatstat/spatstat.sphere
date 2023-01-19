@@ -139,7 +139,7 @@ s2cellstring <- function(x, level = 30L, binary = FALSE, zerotail = binary){
 }
 
 s2allcells <- function(level = 0){
-  stopifnot(is.numeric(level) && min(level) >=0 && max(level) <= 6)
+  stopifnot(is.numeric(level) && min(level) >=0 && max(level) <= 8)
   face_centers <- s2_point(c(1,-1,0,0,0,0), c(0,0,1,-1,0,0), c(0,0,0,0,1,-1))
   cells <- s2_cell_parent(as_s2_cell(face_centers), level = 0)
   if(level == 0){
