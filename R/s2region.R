@@ -462,3 +462,11 @@ s2lonlatbox.s2_geography <- function(x, ...){
   class(rslt) <- c("s2lonlatbox", "s2region")
   return(rslt)
 }
+
+as.s2_polygon <- function(x){
+  if(inherits(x, "s2polygon")){
+    return(x$poly)
+  } else{
+    stop("Only implemented for s2polygon")
+  }
+}
