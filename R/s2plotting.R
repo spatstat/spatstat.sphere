@@ -22,6 +22,13 @@
 #' @param region_args list of arguments passed to the plotting function for the region.
 #'
 #' @return NULL (invisibly)
+#' @examples
+#' ll <- seq(-20, 20, by = 5)
+#' co <- expand.grid(lon = ll, lat = ll)
+#' X <- s2pp(co, marks = co$lat)
+#' plot(unmarx(X))
+#' plot(X)
+#' file.remove(img)
 #' @export
 plot.s2pp <- function(x, ..., add = FALSE, region = !add, longrid = 30, latgrid = 30,
                       region_args = list()){
@@ -41,6 +48,15 @@ plot.s2pp <- function(x, ..., add = FALSE, region = !add, longrid = 30, latgrid 
     }
   }
   co <- co[ok,]
+  if(is.marked(x)){
+    marx <- marks(x, drop = FALSE)
+    marx <- marx[ok, 1, drop=TRUE]
+    if(is.numeric(marx)){
+      cols <- spatstat.options("image.colfun")(256)
+      cm <- colourmap(cols, range = range(marx))
+      dots$col <- cm(marx)
+    }
+  }
   if(!add){
     globeearth(gdata = NULL, runlen = NULL, eye = dots$eye, top = dots$top)
     drawlonlatgrid(longrid = longrid, latgrid = latgrid, eye = dots$eye, top = dots$top)
@@ -48,7 +64,7 @@ plot.s2pp <- function(x, ..., add = FALSE, region = !add, longrid = 30, latgrid 
   if(show.region && !inherits(region, "s2")){
     do.call(plot, args = append(list(x = region, add = TRUE), region_args))
   }
-  globepoints(co, ...)
+  do.call(globepoints, args = append(list(loc = co), dots))
   return(invisible(NULL))
 }
 

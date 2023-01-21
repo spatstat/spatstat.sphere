@@ -55,6 +55,7 @@ make_s2coords <- function(x){
 #'   are required and assumed to be in x, y, z order (disregarding any names).
 #' @param region Region on the sphere where the points occur. Object of class
 #'   `"s2region"`.
+#' @param marks Marks attached to the points.
 ### #' @param  ... Arguments passed to [`s2`] if the region is not otherwise specified.
 #' @inheritDotParams s2
 #' @param check Logical. Check that points actually are inside the provided
@@ -69,7 +70,7 @@ make_s2coords <- function(x){
 #' coords <- data.frame(long, lat)
 #' X <- s2pp(coords)
 #'
-s2pp <- function(coords, region = NULL, ..., check = TRUE){
+s2pp <- function(coords, region = NULL, marks = NULL, ..., check = TRUE){
   if(missing(coords)){
     coords <- matrix(numeric(0), ncol=3)
   }
@@ -77,6 +78,8 @@ s2pp <- function(coords, region = NULL, ..., check = TRUE){
     region <- do.call(s2, list(...))
   }
   coords <- make_s2coords(coords)
+  ## Coordinate types:
+  ctype <- rep("s", 3)
   n <- nrow(coords)
   if (check && n > 0) {
     ok <- s2contains(coords, region)
@@ -89,9 +92,20 @@ s2pp <- function(coords, region = NULL, ..., check = TRUE){
       n <- nrow(coords)
     }
   }
-  else nout <- 0
-
-  rslt <- ppx(coords, domain = region, coord.type = rep("s", 3))
+  else{
+    nout <- 0
+  }
+  if(!is.null(marks)){
+    if(!is.data.frame(marks)){
+      marks <- data.frame(marks = marks)
+    }
+    if(nout>0){
+      marks <- marks[ok,]
+    }
+    ctype <- c(ctype, rep("mark", ncol(marks)))
+    coords <- cbind(coords, marks)
+  }
+  rslt <- ppx(coords, domain = region, coord.type = ctype)
   class(rslt) <- c("s2pp", class(rslt))
 
   if (check && anyDuplicated(rslt))
