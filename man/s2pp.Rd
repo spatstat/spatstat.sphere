@@ -4,7 +4,7 @@
 \alias{s2pp}
 \title{Spherical point pattern}
 \usage{
-s2pp(coords, region = NULL, ..., check = TRUE)
+s2pp(coords, region = NULL, marks = NULL, ..., check = TRUE)
 }
 \arguments{
 \item{coords}{\code{data.frame}, \code{matrix} or \code{list}. Object containing spherical
@@ -15,6 +15,8 @@ are required and assumed to be in x, y, z order (disregarding any names).}
 
 \item{region}{Region on the sphere where the points occur. Object of class
 \code{"s2region"}.}
+
+\item{marks}{Marks attached to the points.}
 
 \item{...}{
   Arguments passed on to \code{\link[=s2]{s2}}

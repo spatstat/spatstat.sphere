@@ -46,3 +46,10 @@ NULL (invisibly)
 Plot a spherical point pattern of class \code{"s2pp"} in base graphics via the
 \link[globe:globe-package]{globe package}.
 }
+\examples{
+ll <- seq(-20, 20, by = 5)
+co <- expand.grid(lon = ll, lat = ll)
+X <- s2pp(co, marks = co$lat)
+plot(unmark(X))
+plot(X)
+}

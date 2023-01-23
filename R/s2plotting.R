@@ -26,9 +26,8 @@
 #' ll <- seq(-20, 20, by = 5)
 #' co <- expand.grid(lon = ll, lat = ll)
 #' X <- s2pp(co, marks = co$lat)
-#' plot(unmarx(X))
+#' plot(unmark(X))
 #' plot(X)
-#' file.remove(img)
 #' @export
 plot.s2pp <- function(x, ..., add = FALSE, region = !add, longrid = 30, latgrid = 30,
                       region_args = list()){
